@@ -43,6 +43,11 @@ class SequenceRequest(BaseModel):
         True,
         description="Check all 6 reading frames for Layer 2"
     )
+    layer2_timeout: Optional[int] = Field(
+        600,
+        description="Timeout in seconds for InterProScan (default: 600 = 10 minutes). "
+                   "Increase for long sequences or when using Docker emulation."
+    )
 
 
 class BlastHitResponse(BaseModel):
@@ -226,7 +231,8 @@ async def analyze_sequence(request: SequenceRequest):
         layer2_result = detect_layer2(
             dna_sequence=sequence,
             docker_image=request.layer2_docker_image,
-            check_all_frames=request.layer2_check_all_frames
+            check_all_frames=request.layer2_check_all_frames,
+            timeout=request.layer2_timeout
         )
         
         layer2_metrics = Layer2Metrics(

@@ -161,7 +161,8 @@ def run_interproscan(
     output_format: str = "tsv",
     temp_dir: Optional[str] = None,
     interproscan_data_dir: Optional[str] = None,
-    use_sudo: bool = False
+    use_sudo: bool = False,
+    timeout: int = 600
 ) -> str:
     """
     Run InterProScan on a protein sequence using Docker.
@@ -175,6 +176,8 @@ def run_interproscan(
         interproscan_data_dir: Path to InterProScan data directory (optional,
                               but recommended for full functionality)
         use_sudo: Whether to use sudo for Docker commands (if permission denied)
+        timeout: Timeout in seconds (default: 600 = 10 minutes). InterProScan can be slow,
+                especially for long sequences or when using Docker emulation.
         
     Returns:
         InterProScan output as string
@@ -187,6 +190,11 @@ def run_interproscan(
         If you get permission denied errors, either:
         1. Add your user to the docker group: sudo usermod -aG docker $USER (then log out/in)
         2. Use use_sudo=True (may require password entry)
+        
+        If you get timeout errors, try:
+        1. Increase the timeout parameter (e.g., timeout=1200 for 20 minutes)
+        2. Mount the InterProScan data directory to avoid downloading data
+        3. Check if the sequence is very long - consider splitting it
     """
     docker_available, needs_sudo = check_docker_available()
     if not docker_available:
@@ -244,7 +252,7 @@ def run_interproscan(
             cmd,
             capture_output=True,
             text=True,
-            timeout=300  # 5 minute timeout
+            timeout=timeout
         )
         
         if result.returncode != 0:
@@ -270,6 +278,21 @@ def run_interproscan(
             # If no output file, return stdout (some versions may output to stdout)
             return result.stdout
             
+    except subprocess.TimeoutExpired:
+        # Provide helpful error message for timeout
+        seq_len = len(protein_sequence)
+        raise RuntimeError(
+            f"InterProScan timed out after {timeout} seconds for {sequence_id} "
+            f"(protein length: {seq_len} amino acids).\n"
+            f"This can happen with:\n"
+            f"  - Long protein sequences\n"
+            f"  - Docker emulation overhead (--platform linux/amd64)\n"
+            f"  - Missing InterProScan data directory\n"
+            f"Solutions:\n"
+            f"  1. Increase timeout parameter (e.g., timeout=1200 for 20 minutes)\n"
+            f"  2. Mount InterProScan data directory: interproscan_data_dir='/path/to/data'\n"
+            f"  3. Check if sequence is unusually long and consider splitting it"
+        )
     finally:
         # Cleanup (optional - could keep for debugging)
         pass
@@ -377,8 +400,9 @@ def detect_layer2(
     docker_image: str = "interpro/interproscan:5.76-107.0",
     check_all_frames: bool = True,
     min_protein_length: int = 30,
-    interproscan_data_dir: Optional[str] = None,
-    use_sudo: bool = False
+    interproscan_data_dir: Optional[str] = "/home/ubuntu/interproscan-data/interproscan-5.76-107.0/data",
+    use_sudo: bool = False,
+    timeout: int = 600
 ) -> Layer2Result:
     """
     Main function for Layer 2 detection using InterProScan.
@@ -388,6 +412,9 @@ def detect_layer2(
         docker_image: Docker image to use for InterProScan
         check_all_frames: Whether to check all 6 reading frames
         min_protein_length: Minimum protein length to analyze
+        interproscan_data_dir: Path to InterProScan data directory (optional)
+        use_sudo: Whether to use sudo for Docker commands
+        timeout: Timeout in seconds for each InterProScan run (default: 600 = 10 minutes)
         
     Returns:
         Layer2Result object with risk assessment
@@ -430,7 +457,8 @@ def detect_layer2(
                 sequence_id=f"frame_{frame_num}",
                 docker_image=docker_image,
                 interproscan_data_dir=interproscan_data_dir,
-                use_sudo=use_sudo
+                use_sudo=use_sudo,
+                timeout=timeout
             )
             
             # Parse results
@@ -465,7 +493,8 @@ def detect_layer2_from_fasta(
     fasta_path: str,
     docker_image: str = "interpro/interproscan:5.76-107.0",
     check_all_frames: bool = True,
-    use_sudo: bool = False
+    use_sudo: bool = False,
+    timeout: int = 600
 ) -> Dict[str, Layer2Result]:
     """
     Run Layer 2 detection on all sequences in a FASTA file.
@@ -474,6 +503,8 @@ def detect_layer2_from_fasta(
         fasta_path: Path to input FASTA file
         docker_image: Docker image to use
         check_all_frames: Whether to check all 6 reading frames
+        use_sudo: Whether to use sudo for Docker commands
+        timeout: Timeout in seconds for each InterProScan run (default: 600 = 10 minutes)
         
     Returns:
         Dictionary mapping sequence IDs to Layer2Result objects
@@ -489,7 +520,8 @@ def detect_layer2_from_fasta(
                 sequence,
                 docker_image=docker_image,
                 check_all_frames=check_all_frames,
-                use_sudo=use_sudo
+                use_sudo=use_sudo,
+                timeout=timeout
             )
             results[record.id] = result
     except Exception as e:
