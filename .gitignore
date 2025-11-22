@@ -1,5 +1,9 @@
 .venv
 .egg-info/
 genome-download
+refseq
 __pycache__/
 dbc/
+
+evo2/pretraining_demo
+evo2/nemo2_evo2_1b_8k
