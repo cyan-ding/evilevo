@@ -1,3 +1,5 @@
 [submodule "evo2/bionemo"]
 	path = evo2/bionemo
-	url = ssh://git@github.com/NVIDIA/bionemo-framework/
+	url = https://github.com/NVIDIA/bionemo-framework
+[submodule "bionemo"]
+	url = https://github.com/NVIDIA/bionemo-framework

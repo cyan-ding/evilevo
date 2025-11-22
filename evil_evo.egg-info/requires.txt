@@ -1,3 +1,0 @@
-biopython>=1.86
-ncbi-genome-download>=0.3.3
-transformer-engine[pytorch]==2.8.0
