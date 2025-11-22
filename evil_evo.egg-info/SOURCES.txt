@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-detector/cai_calculator.py
-evil_evo.egg-info/PKG-INFO
-evil_evo.egg-info/SOURCES.txt
-evil_evo.egg-info/dependency_links.txt
-evil_evo.egg-info/requires.txt
-evil_evo.egg-info/top_level.txt
