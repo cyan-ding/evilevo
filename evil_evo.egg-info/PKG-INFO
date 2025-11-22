@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: evil-evo
+Version: 0.1.0
+Summary: Fine-tuned Evo2 1b on eukaryotic viruses and platform for synthesis companies to detect malicious genomes
+Requires-Dist: biopython>=1.86
+Requires-Dist: ncbi-genome-download>=0.3.3
+Requires-Dist: transformer-engine[pytorch]==2.8.0
