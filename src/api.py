@@ -4,7 +4,6 @@ REST API for EvilEvo Detector
 This FastAPI application provides endpoints to analyze DNA sequences
 using the detection system:
 - Layer 1: BLAST similarity to known pathogens
-- Layer 2: Virus host type detection (eukaryote-infecting vs phage)
 - Layer 3: Codon Adaptation Index (CAI) calculation
 """
 
@@ -18,7 +17,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from layer1.layer1_blast import detect_layer1, BlastHit, DBC_FILE
-from layer2.layer2_virus_host import detect_virus_host_type, VirusHostResult
 from layer3.cai_calculator import calculate_cai, calculate_cai_for_orf
 
 app = FastAPI(
@@ -62,15 +60,6 @@ class Layer1Metrics(BaseModel):
     warnings: List[str] = []
 
 
-class Layer2Metrics(BaseModel):
-    """Raw metrics from Layer 2 detection (virus host type)."""
-    host_type: Optional[str] = None
-    probabilities: Optional[Dict[str, float]] = None
-    feature_count: int = 0
-    classifier_used: Optional[str] = None
-    warnings: List[str] = []
-
-
 class Layer3Metrics(BaseModel):
     """Raw metrics from Layer 3 detection."""
     cai_frame_0: Optional[float] = None
@@ -83,7 +72,6 @@ class Layer3Metrics(BaseModel):
 class AnalysisResponse(BaseModel):
     """Complete analysis response with all layer metrics."""
     layer1: Layer1Metrics
-    layer2: Optional[Layer2Metrics] = None
     layer3: Layer3Metrics
 
 
@@ -116,7 +104,6 @@ async def root():
         },
         "layers": {
             "layer1": "BLAST similarity to known pathogens",
-            "layer2": "Virus host type detection (eukaryote-infecting vs phage)",
             "layer3": "Codon Adaptation Index (CAI) calculation"
         }
     }
@@ -175,29 +162,6 @@ async def analyze_sequence(request: SequenceRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Layer 1 analysis failed: {str(e)}"
-        )
-    
-    # Layer 2: Virus host type detection
-    try:
-        virus_host_result = detect_virus_host_type(
-            sequence=sequence,
-            nucleic_acid="DNA",
-            classifier_type="svc",
-            use_models=True  # Will gracefully fall back to features only if models fail
-        )
-        
-        layer2_metrics = Layer2Metrics(
-            host_type=virus_host_result.host_type,
-            probabilities=virus_host_result.probabilities,
-            feature_count=virus_host_result.feature_count,
-            classifier_used=virus_host_result.classifier_used,
-            warnings=virus_host_result.warnings
-        )
-        results['layer2'] = layer2_metrics
-    except Exception as e:
-        # Don't fail the whole request if this layer fails
-        results['layer2'] = Layer2Metrics(
-            warnings=[f"Virus host detection failed: {str(e)}"]
         )
     
     # Layer 3: CAI calculation
