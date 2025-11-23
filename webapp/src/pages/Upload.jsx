@@ -69,13 +69,11 @@ const Upload = () => {
     };
 
     const isMalicious = (data) => {
-        // Simple heuristic for demo purposes based on available metrics
-        // In a real app, this would use the risk scores if available
+        // Simple heuristic based on available metrics (Layer 1 & 3)
         if (!data) return false;
-        const hasVirulence = data.layer2.virulence_factors.length > 0;
-        const hasToxins = data.layer2.toxins.length > 0;
         const highIdentity = data.layer1.top_hit && data.layer1.top_hit.identity > 90;
-        return hasVirulence || hasToxins || highIdentity;
+        const highCAI = data.layer3.max_cai > 0.8;
+        return highIdentity || highCAI;
     };
 
     return (
@@ -159,17 +157,6 @@ const Upload = () => {
                                     Top Hit: {result.layer1.top_hit.subject_title.substring(0, 30)}...
                                 </p>
                             )}
-                        </div>
-
-                        <div className="metric-group">
-                            <h3 className="text-sm text-muted mb-sm">LAYER 2: PROTEINS</h3>
-                            <p>Domains: <span className="text-primary">{result.layer2.num_hits}</span></p>
-                            <p>Virulence Factors: <span className={result.layer2.virulence_factors.length > 0 ? 'text-secondary' : 'text-primary'}>
-                                {result.layer2.virulence_factors.length}
-                            </span></p>
-                            <p>Toxins: <span className={result.layer2.toxins.length > 0 ? 'text-secondary' : 'text-primary'}>
-                                {result.layer2.toxins.length}
-                            </span></p>
                         </div>
 
                         <div className="metric-group">

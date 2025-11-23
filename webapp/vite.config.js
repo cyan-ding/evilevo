@@ -9,6 +9,14 @@ export default defineConfig({
       '/analyze': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+      },
+      '/inference': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/checkpoints': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
       }
     }
   }
