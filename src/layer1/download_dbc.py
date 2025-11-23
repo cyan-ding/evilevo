@@ -8,7 +8,7 @@ ncbi-genome-download and creates a BLAST database for Layer 1 detection.
 import subprocess
 import gzip
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List
 from Bio import SeqIO
 
 
@@ -39,7 +39,7 @@ SELECT_AGENTS = {
     "Monkeypox virus": {
         "genus": "Orthopoxvirus",
         "species": "Monkeypox virus",
-        "common_names": ["Monkeypox", "MPXV"]
+        "common_names": ["Monkeypox", "MPXV"] 
     },
     "Goat pox virus": {
         "genus": "Capripoxvirus",
@@ -56,7 +56,6 @@ SELECT_AGENTS = {
         "species": "Sheeppox virus",
         "common_names": ["Sheep pox", "Sheeppox"]
     },
-    
     # Paramyxoviruses
     "Nipah virus": {
         "genus": "Henipavirus",
@@ -380,7 +379,10 @@ def create_dbc(
     Returns:
         Path to BLAST database (without extension)
     """
-    from detector.layer1.layer1_blast import create_blast_database
+    try:
+        from .layer1_blast import create_blast_database
+    except ImportError:
+        from layer1_blast import create_blast_database
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -476,7 +478,10 @@ def create_dbc_from_all_viruses(
     Returns:
         Path to BLAST database
     """
-    from detector.layer1.layer1_blast import create_blast_database
+    try:
+        from .layer1_blast import create_blast_database
+    except ImportError:
+        from layer1_blast import create_blast_database
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)

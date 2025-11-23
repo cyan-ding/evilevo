@@ -679,7 +679,7 @@ if __name__ == "__main__":
     print("Running BLAST Detection")
     print(f"{'='*50}")
     
-    test_sequence_path = os.path.join(os.path.dirname(__file__), "..",  "test_sequence.txt")
+    test_sequence_path = os.path.join(os.path.dirname(__file__), "..",  "test_2.txt")
     test_sequence_path = os.path.abspath(test_sequence_path)
 
     with open(test_sequence_path, "r") as f:

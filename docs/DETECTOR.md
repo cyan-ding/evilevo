@@ -2,7 +2,6 @@
 
 Layer	Primary Heuristic Focus	Key Tool / Library	Difficulty
 Layer 1	Direct Threat Similarity (Known Pathogens)	BLAST+ (Command Line) & Custom Python Script	Easy (1-2 hours)
-Layer 2	Functional Virulence (Protein Toxin/Domain Check)	InterProScan or HMMER/Pfam	Medium (2-3 hours)
 Layer 3	Host Adaptability (Eukaryotic Expression)	Biopython & JASPAR/Promoter 2.0	Easy-Medium (1-2 hours)
 
 1. Layer 1: Direct Threat Similarity (The Baseline)
@@ -26,28 +25,7 @@ C. Difficulty: Easy (Focus on the output parser)
 
 The difficulty is not running BLAST, but setting up the targeted database and writing a robust parser to interpret the results and assign a risk score based on the %-identity and the identity of the top hit.
 
-2. Layer 2: Functional Virulence (Protein & Domain Check)
-
-This layer looks past sequence similarity and checks if the generated DNA encodes a dangerous function. This requires translation.
-
-A. Heuristics
-
-    Virulence Factor Domains: Presence of conserved protein domains known to be toxins, immune modulators (e.g., specific deubiquitinating enzymes, interferon antagonists), or cell-entry proteins (e.g., receptor-binding domains).
-
-    Chimeric Constructs: Detection of a non-viral domain (like a bacterial toxin) fused to a viral protein backbone.
-
-B. Tools and Implementation
-
-Tool	Purpose	Implementation Notes
-Biopython (Seq.translate)	Translate the DNA into all six possible Open Reading Frames (ORFs).	You must check all 6 frames. For a hackathon, don't worry about start/stop codons yet—just translate the whole thing.
-HMMER3 & Pfam Database	Highly sensitive search for Protein Domains using Hidden Markov Models (HMMs).	You need to install HMMER3 and download the Pfam-A library. Use the hmmsearch command to search your 6 ORFs against a mini-Pfam database containing only known virulence and toxin domains (you'll need to curate this mini-list beforehand for speed).
-InterProScan (Web/API)	Comprehensive domain search (If local install fails).	If setting up HMMER/Pfam is too slow, use the InterProScan Web Service/API for a slightly slower but more comprehensive check. Hackathon tip: Only use the API if you can't get a command-line tool working, as API rate limits can kill your script.
-
-C. Difficulty: Medium (Requires command-line setup/database pre-curation)
-
-The complexity is managing the 6-frame translation and the required installation and indexing of HMMER/Pfam. Focus only on high-risk Pfam IDs to keep the search time down.
-
-3. Layer 3: Host Adaptability and Assembly
+2. Layer 3: Host Adaptability and Assembly
 
 This layer looks for elements that maximize the virus's ability to be expressed and replicated in a target eukaryotic host (like human cells), which is a clear sign of malign intent.
 
@@ -70,12 +48,12 @@ Calculating the CAI is mathematically simple and very fast. The TFBS/Promoter st
 
 💡 Hackathon Execution Strategy
 
-    Preparation (Pre-Hackathon): Download and install all command-line tools (BLAST+, HMMER3). Curate your small, high-priority databases (DBC, mini-Pfam, Human Codon Usage Table).
+    Preparation (Pre-Hackathon): Download and install all command-line tools (BLAST+). Curate your small, high-priority databases (DBC, Human Codon Usage Table).
 
     Hour 1: Setup & Layer 1: Write the Python script to take FASTA input and execute BLAST+ against your DBC. Focus on the scoring/reporting logic.
 
-    Hour 2-4: Layer 2: Implement the 6-frame translation (Biopython). Integrate the HMMER call and the logic to flag hits against your mini-Pfam list of toxin domains.
+    Hour 2-3: Layer 3: Implement the CAI calculation and the Promoter/TFBS search.
 
-    Hour 5: Layer 3 & Integration: Implement the CAI calculation and the Promoter/TFBS search. Integrate all three layers into a single function that returns a cumulative risk score.
+    Hour 4-5: Integration: Integrate all layers into a single function that returns a cumulative risk score.
 
     Hour 6: Polish & Demo: Debug, create a simple command-line interface, and prepare the final presentation.
