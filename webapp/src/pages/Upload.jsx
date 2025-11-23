@@ -33,7 +33,10 @@ const Upload = () => {
     };
 
     const handleAnalyze = async () => {
-        if (!file) return;
+        if (!file) {
+            console.error("no file when handleAnalyze called");
+            return;
+        };
         setScanning(true);
         setError(null);
         setResult(null);
