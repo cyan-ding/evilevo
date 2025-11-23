@@ -14,7 +14,7 @@ This platform implements a multi-layer detection system that analyzes DNA sequen
 
 # Running
 
-The main webapp that unifies this project is located in `/webapp`. This is a simple Vite app that can be run with `npm run dev` after installing the dependencies with `npm i`. Require `node >= 20`.
+The main webapp that unifies this project is located in `/webapp`. This is a simple Vite app that can be run with `npm run dev` after installing the dependencies with `npm i`. Require `node >= 20`. Runs on port 5173 by default.
 
 Then, run the `nvcr.io/nvidia/clara/bionemo-framework:2.7` docker container with the `evo2/` directory mounted. Inside `evo2/webapi/app.py` is a Flask app. Run this file with Python inside the docker container. Port `5000` must be exposed.
 
@@ -77,6 +77,8 @@ The CAI is calculated as the geometric mean of relative adaptiveness (w) values:
 High CAI values (>0.7) suggest intentional codon optimization for human expression, which is unusual for naturally occurring viruses and may indicate synthetic design.
 
 ## Evo2
+
+Evo 2 is a novel transformer-like model for generating DNA nucleotide sequences developed by the Arc Institute. It has already been shown to have capabilities to generate novel prokaryotic viruses after fine-tuning. Thus, we aimed to expand on that prior work by fine-tuning it on eukaryotic viruses, which could have the potential to infect humans. As such, our fine-tuned model has significant red team value for the bioweapon capabilities of models. The model was fine tuned using the NCBI virus genome dataset with the NVIDIA bionemo package. The best performing checkpoint of our fine tuning was at 350 iterations out of 1000. The capabilities of our fine-tuned model can be explored on the generate page of the webapp.
 
 ## Installation
 
