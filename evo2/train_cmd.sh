@@ -1,4 +1,4 @@
-MAX_STEPS=100
+MAX_STEPS=1000
 VAL_CHECK_INTERVAL=50
 WARMUP_STEPS=100
 
@@ -8,7 +8,7 @@ train_evo2 \
     --result-dir pretraining_demo \
     --experiment-name evo2 \
     --model-size 1b \
-    --devices 1 \
+    --devices 8 \
     --num-nodes 1 \
     --seq-length 8192 \
     --micro-batch-size 2 \
