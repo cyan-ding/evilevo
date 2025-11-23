@@ -12,6 +12,14 @@ This platform implements a multi-layer detection system that analyzes DNA sequen
 - **Demonstrated generation** of eukaryotic viruses using the fine-tuned model
 - **Developed detection methods** to identify potentially malicious viral genomes through multiple analytical layers
 
+# Running
+
+The main webapp that unifies this project is located in `/webapp`. This is a simple Vite app that can be run with `npm run dev` after installing the dependencies with `npm i`. Require `node >= 20`.
+
+Then, run the `nvcr.io/nvidia/clara/bionemo-framework:2.7` docker container with the `evo2/` directory mounted. Inside `evo2/webapi/app.py` is a Flask app. Run this file with Python inside the docker container. Port `5000` must be exposed.
+
+Then, follow directions below to run the detection web server.
+
 ## Detection Layers
 
 ### Layer 1: Direct Threat Similarity Detection
@@ -67,6 +75,8 @@ The CAI is calculated as the geometric mean of relative adaptiveness (w) values:
 - `CAI = (w1 × w2 × ... × wn)^(1/n)`
 
 High CAI values (>0.7) suggest intentional codon optimization for human expression, which is unusual for naturally occurring viruses and may indicate synthetic design.
+
+## Evo2
 
 ## Installation
 
