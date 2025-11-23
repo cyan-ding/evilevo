@@ -1,0 +1,12 @@
+{
+  "classifier_files":
+  {
+    "qda":"classifier_qda.pkl",
+    "knn":"classifier_knn.pkl",
+    "svc":"classifier_svc.pkl",
+    "lr":"classifier_lr.pkl"
+  },
+  "scaler_file":"scaler.pkl",
+  "features_file":"features.json",
+  "all_features_file":"features.dump"
+}

@@ -2,9 +2,9 @@
 REST API for EvilEvo Detector
 
 This FastAPI application provides endpoints to analyze DNA sequences
-using the three-layer detection system:
+using the detection system:
 - Layer 1: BLAST similarity to known pathogens
-- Layer 2: InterProScan protein domain analysis
+- Layer 2: Virus host type detection (eukaryote-infecting vs phage)
 - Layer 3: Codon Adaptation Index (CAI) calculation
 """
 
@@ -17,9 +17,9 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from detector.layer1.layer1_blast import detect_layer1, BlastHit, DBC_FILE
-from detector.layer2.layer2_interproscan import detect_layer2, InterProHit
-from detector.layer3.cai_calculator import calculate_cai, calculate_cai_for_orf
+from layer1.layer1_blast import detect_layer1, BlastHit, DBC_FILE
+from layer2.layer2_virus_host import detect_virus_host_type, VirusHostResult
+from layer3.cai_calculator import calculate_cai, calculate_cai_for_orf
 
 app = FastAPI(
     title="EvilEvo Detector API",
@@ -34,19 +34,6 @@ class SequenceRequest(BaseModel):
     layer1_database_path: Optional[str] = Field(
         None, 
         description="Path to BLAST database (defaults to configured DBC)"
-    )
-    layer2_docker_image: Optional[str] = Field(
-        "interpro/interproscan:5.76-107.0",
-        description="Docker image for InterProScan"
-    )
-    layer2_check_all_frames: bool = Field(
-        True,
-        description="Check all 6 reading frames for Layer 2"
-    )
-    layer2_timeout: Optional[int] = Field(
-        600,
-        description="Timeout in seconds for InterProScan (default: 600 = 10 minutes). "
-                   "Increase for long sequences or when using Docker emulation."
     )
 
 
@@ -75,33 +62,13 @@ class Layer1Metrics(BaseModel):
     warnings: List[str] = []
 
 
-class InterProHitResponse(BaseModel):
-    """Response model for InterProScan hit."""
-    protein_id: str
-    sequence_md5: str
-    length: int
-    database: str
-    database_accession: str
-    database_description: str
-    start: int
-    end: int
-    e_value: Optional[float] = None
-    status: str
-    date: str
-    interpro_accession: Optional[str] = None
-    interpro_description: Optional[str] = None
-    go_terms: List[str] = []
-    pathway: Optional[str] = None
-
-
 class Layer2Metrics(BaseModel):
-    """Raw metrics from Layer 2 detection."""
-    num_hits: int
-    hits: List[InterProHitResponse] = []
-    virulence_factors: List[str] = []
-    toxins: List[str] = []
+    """Raw metrics from Layer 2 detection (virus host type)."""
+    host_type: Optional[str] = None
+    probabilities: Optional[Dict[str, float]] = None
+    feature_count: int = 0
+    classifier_used: Optional[str] = None
     warnings: List[str] = []
-    details: Dict[str, Any] = {}
 
 
 class Layer3Metrics(BaseModel):
@@ -116,7 +83,7 @@ class Layer3Metrics(BaseModel):
 class AnalysisResponse(BaseModel):
     """Complete analysis response with all layer metrics."""
     layer1: Layer1Metrics
-    layer2: Layer2Metrics
+    layer2: Optional[Layer2Metrics] = None
     layer3: Layer3Metrics
 
 
@@ -137,27 +104,6 @@ def blast_hit_to_response(hit: BlastHit) -> BlastHitResponse:
     )
 
 
-def interpro_hit_to_response(hit: InterProHit) -> InterProHitResponse:
-    """Convert InterProHit to response model."""
-    return InterProHitResponse(
-        protein_id=hit.protein_id,
-        sequence_md5=hit.sequence_md5,
-        length=hit.length,
-        database=hit.database,
-        database_accession=hit.database_accession,
-        database_description=hit.database_description,
-        start=hit.start,
-        end=hit.end,
-        e_value=hit.e_value,
-        status=hit.status,
-        date=hit.date,
-        interpro_accession=hit.interpro_accession,
-        interpro_description=hit.interpro_description,
-        go_terms=hit.go_terms,
-        pathway=hit.pathway
-    )
-
-
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -167,6 +113,11 @@ async def root():
         "endpoints": {
             "/analyze": "POST - Analyze a DNA sequence",
             "/health": "GET - Health check"
+        },
+        "layers": {
+            "layer1": "BLAST similarity to known pathogens",
+            "layer2": "Virus host type detection (eukaryote-infecting vs phage)",
+            "layer3": "Codon Adaptation Index (CAI) calculation"
         }
     }
 
@@ -180,7 +131,7 @@ async def health_check():
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_sequence(request: SequenceRequest):
     """
-    Analyze a DNA sequence using all three detection layers.
+    Analyze a DNA sequence using detection layers.
     
     Returns raw metrics from each layer without risk scores.
     """
@@ -226,28 +177,27 @@ async def analyze_sequence(request: SequenceRequest):
             detail=f"Layer 1 analysis failed: {str(e)}"
         )
     
-    # Layer 2: InterProScan detection
+    # Layer 2: Virus host type detection
     try:
-        layer2_result = detect_layer2(
-            dna_sequence=sequence,
-            docker_image=request.layer2_docker_image,
-            check_all_frames=request.layer2_check_all_frames,
-            timeout=request.layer2_timeout
+        virus_host_result = detect_virus_host_type(
+            sequence=sequence,
+            nucleic_acid="DNA",
+            classifier_type="svc",
+            use_models=True  # Will gracefully fall back to features only if models fail
         )
         
         layer2_metrics = Layer2Metrics(
-            num_hits=len(layer2_result.hits),
-            hits=[interpro_hit_to_response(hit) for hit in layer2_result.hits],
-            virulence_factors=layer2_result.virulence_factors,
-            toxins=layer2_result.toxins,
-            warnings=layer2_result.warnings,
-            details=layer2_result.details
+            host_type=virus_host_result.host_type,
+            probabilities=virus_host_result.probabilities,
+            feature_count=virus_host_result.feature_count,
+            classifier_used=virus_host_result.classifier_used,
+            warnings=virus_host_result.warnings
         )
         results['layer2'] = layer2_metrics
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Layer 2 analysis failed: {str(e)}"
+        # Don't fail the whole request if this layer fails
+        results['layer2'] = Layer2Metrics(
+            warnings=[f"Virus host detection failed: {str(e)}"]
         )
     
     # Layer 3: CAI calculation

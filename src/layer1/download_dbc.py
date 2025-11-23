@@ -380,7 +380,10 @@ def create_dbc(
     Returns:
         Path to BLAST database (without extension)
     """
-    from detector.layer1.layer1_blast import create_blast_database
+    try:
+        from .layer1_blast import create_blast_database
+    except ImportError:
+        from layer1_blast import create_blast_database
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -476,7 +479,10 @@ def create_dbc_from_all_viruses(
     Returns:
         Path to BLAST database
     """
-    from detector.layer1.layer1_blast import create_blast_database
+    try:
+        from .layer1_blast import create_blast_database
+    except ImportError:
+        from layer1_blast import create_blast_database
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)

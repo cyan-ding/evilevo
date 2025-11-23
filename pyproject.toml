@@ -5,7 +5,7 @@ description = "Fine-tuned Evo2 1b on eukaryotic viruses and platform for synthes
 dependencies = [
     "biopython>=1.86",
     "ncbi-genome-download>=0.3.3",
-    "transformer-engine>=2.9.0",
+    "requests>=2.31.0",
 ]
 
 [build-system]
