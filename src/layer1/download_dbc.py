@@ -8,7 +8,7 @@ ncbi-genome-download and creates a BLAST database for Layer 1 detection.
 import subprocess
 import gzip
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List
 from Bio import SeqIO
 
 
@@ -39,7 +39,7 @@ SELECT_AGENTS = {
     "Monkeypox virus": {
         "genus": "Orthopoxvirus",
         "species": "Monkeypox virus",
-        "common_names": ["Monkeypox", "MPXV"]
+        "common_names": ["Monkeypox", "MPXV"] 
     },
     "Goat pox virus": {
         "genus": "Capripoxvirus",
@@ -56,7 +56,6 @@ SELECT_AGENTS = {
         "species": "Sheeppox virus",
         "common_names": ["Sheep pox", "Sheeppox"]
     },
-    
     # Paramyxoviruses
     "Nipah virus": {
         "genus": "Henipavirus",

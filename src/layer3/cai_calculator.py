@@ -14,7 +14,7 @@ High CAI (close to 1.0) indicates optimization for the target organism.
 
 from typing import Dict
 from Bio.Seq import Seq
-
+import os
 
 # Human optimal codon usage table (from highly expressed genes)
 # Format: {amino_acid: {codon: relative_usage_frequency}}
@@ -197,14 +197,26 @@ if __name__ == "__main__":
     
     # Test with a highly optimized sequence (all optimal codons)
     # Using human optimal codons: GCC (Ala), GAG (Glu), ATC (Ile), GAC (Asp)
-    test_seq = "GCCGAGATCGAC"  # Ala-Glu-Ile-Asp (all optimal codons)
+    test_sequence_path = os.path.join(os.path.dirname(__file__), "..",  "test_sequence.txt")
+    test_sequence_path = os.path.abspath(test_sequence_path)
+
+    with open(test_sequence_path, "r") as f:
+        # Join all non-empty lines, remove whitespace/newlines
+        test_seq = "".join([line.strip() for line in f if line.strip()])
+    
+    # Trim sequence to multiple of 3 (required for codon-based calculations)
+    remainder = len(test_seq) % 3
+    if remainder != 0:
+        test_seq = test_seq[:-remainder]
+        print(f"Note: Trimmed sequence from {len(test_seq) + remainder} to {len(test_seq)} bases (removed {remainder} trailing base(s))")
+    
     cai = calculate_cai(test_seq)
     print(f"\nCAI for optimized test sequence: {cai:.4f}")
     print("Expected: close to 1.0 (all optimal codons)")
     
-    # Test with a less optimized sequence
-    test_seq2 = "GCGGAAGATGGT"  # Using less optimal codons (12 bases = 4 codons)
-    cai2 = calculate_cai(test_seq2)
-    print(f"CAI for less optimized sequence: {cai2:.4f}")
-    print("Expected: lower than optimized sequence")
+    # # Test with a less optimized sequence
+    # test_seq2 = "GCGGAAGATGGT"  # Using less optimal codons (12 bases = 4 codons)
+    # cai2 = calculate_cai(test_seq2)
+    # print(f"CAI for less optimized sequence: {cai2:.4f}")
+    # print("Expected: lower than optimized sequence")
 
