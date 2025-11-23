@@ -6,6 +6,10 @@ import uuid
 import re
 import logging
 
+# Set environment variables to help with GPU detection
+os.environ['CUDA_VISIBLE_DEVICES'] = os.environ.get('CUDA_VISIBLE_DEVICES', '0')
+os.environ['NVIDIA_DISABLE_REQUIRE'] = '1'
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -80,12 +84,18 @@ def inference():
         
         cmd.extend(['--output-file', output_file])
         
+        # Prepare environment for subprocess with GPU settings
+        env = os.environ.copy()
+        env['CUDA_VISIBLE_DEVICES'] = env.get('CUDA_VISIBLE_DEVICES', '0')
+        env['NVIDIA_DISABLE_REQUIRE'] = '1'
+        
         # Execute the command
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=600  # 10 minute timeout
+            timeout=600,  # 10 minute timeout
+            env=env
         )
         
         # Log the full output

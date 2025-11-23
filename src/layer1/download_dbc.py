@@ -12,6 +12,9 @@ from typing import List
 from Bio import SeqIO
 
 
+import os
+print(os.environ["PATH"])
+
 # Mapping of common names to scientific names/genera for ncbi-genome-download
 # ncbi-genome-download uses genus names or species taxids
 SELECT_AGENTS = {
@@ -203,7 +206,7 @@ def download_viral_genomes(
     output_path.mkdir(parents=True, exist_ok=True)
     
     cmd = [
-        "ncbi-genome-download",
+        "/lambda/nfs/brandon-virginia/evilevo/.venv/bin/ncbi-genome-download",
         "viral",
         "-s", section,
         "-F", ",".join(formats),
@@ -215,7 +218,7 @@ def download_viral_genomes(
     
     print(f"Downloading all viral genomes from {section}...")
     print(f"Command: {' '.join(cmd)}")
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True)
     
     if result.returncode != 0:
@@ -249,7 +252,7 @@ def download_by_genus(
     for genus in genera:
         print(f"\nDownloading {genus}...")
         cmd = [
-            "ncbi-genome-download",
+            "/lambda/nfs/brandon-virginia/evilevo/.venv/bin/ncbi-genome-download",
             "viral",
             "-s", section,
             "-F", ",".join(formats),
@@ -259,7 +262,7 @@ def download_by_genus(
             "-v"
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, env=os.environ)
         
         if result.returncode != 0:
             print(f"  Warning: {genus} download had issues")

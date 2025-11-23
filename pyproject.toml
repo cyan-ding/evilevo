@@ -4,8 +4,10 @@ version = "0.1.0"
 description = "Fine-tuned Evo2 1b on eukaryotic viruses and platform for synthesis companies to detect malicious genomes"
 dependencies = [
     "biopython>=1.86",
+    "fastapi>=0.121.3",
     "ncbi-genome-download>=0.3.3",
     "requests>=2.31.0",
+    "uvicorn>=0.38.0",
 ]
 
 [build-system]
