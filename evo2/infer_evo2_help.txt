@@ -1,0 +1,21 @@
+$ infer_evo2 --help
+usage: infer_evo2 [-h] [--prompt PROMPT] --ckpt-dir CKPT_DIR [--temperature TEMPERATURE] [--top-k TOP_K] [--top-p TOP_P] [--max-new-tokens MAX_NEW_TOKENS] [--tensor-parallel-size TENSOR_PARALLEL_SIZE] [--pipeline-model-parallel-size PIPELINE_MODEL_PARALLEL_SIZE] [--context-parallel-size CONTEXT_PARALLEL_SIZE] [--output-file OUTPUT_FILE]
+
+options:
+  -h, --help            show this help message and exit
+  --prompt PROMPT       Prompt to generate text from Evo2. Defaults to a phylogenetic lineage tag for E coli.
+  --ckpt-dir CKPT_DIR   Path to checkpoint directory containing pre-trained Evo2 model.
+  --temperature TEMPERATURE
+                        Temperature during sampling for generation.
+  --top-k TOP_K         Top K during sampling for generation.
+  --top-p TOP_P         Top P during sampling for generation.
+  --max-new-tokens MAX_NEW_TOKENS
+                        Maximum number of tokens to generate.
+  --tensor-parallel-size TENSOR_PARALLEL_SIZE
+                        Order of tensor parallelism. Defaults to 1.
+  --pipeline-model-parallel-size PIPELINE_MODEL_PARALLEL_SIZE
+                        Order of pipeline parallelism. Defaults to 1.
+  --context-parallel-size CONTEXT_PARALLEL_SIZE
+                        Order of context parallelism. Defaults to 1.
+  --output-file OUTPUT_FILE
+                        Output file containing the generated text produced by the Evo2 model. If not provided, the output will be logged.

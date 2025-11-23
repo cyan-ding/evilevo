@@ -1,0 +1,13 @@
+{
+    "class": "Evo2Dataset",
+    "dataset_path": "/brandon/evilevo/evo2/preprocess/ncbi_viruses_homo_sapiens_uint8_byte-level_train",
+    "num_samples": 8000,
+    "index_split": "train",
+    "random_seed": 1234,
+    "sequence_length": 8192,
+    "split": null,
+    "split_matrix": null,
+    "tokenizer": {
+        "class": "nemo.collections.common.tokenizers.bytelevel_tokenizers.ByteLevelTokenizer"
+    }
+}
